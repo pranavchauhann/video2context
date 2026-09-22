@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "events": [{
+    "id": "evt_0001",
+    "start_s": 2,
+    "end_s": 4,
+    "screen": "Screen recording",
+    "speech": ["Move Export into the toolbar."],
+    "ocr": ["Analytics | Export"],
+    "visual": "",
+    "intent": "Move Export into the toolbar.",
+    "frames": ["frames/000002000.jpg"],
+    "importance": 0.79
+  }]
+}

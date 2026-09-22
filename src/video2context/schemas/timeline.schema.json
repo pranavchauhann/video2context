@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:video2context:timeline:1.0",
+  "title": "Video2Context timeline",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "events"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "start_s", "end_s", "screen", "speech", "ocr", "visual", "intent", "frames", "importance"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^evt_[0-9]+$"},
+          "start_s": {"type": "number", "minimum": 0},
+          "end_s": {"type": "number", "minimum": 0},
+          "screen": {"type": "string"},
+          "speech": {"type": "array", "items": {"type": "string"}},
+          "ocr": {"type": "array", "items": {"type": "string"}},
+          "visual": {"type": "string"},
+          "intent": {"type": "string"},
+          "frames": {"type": "array", "items": {"type": "string", "pattern": "^frames/[0-9]+\\.jpg$"}},
+          "importance": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    }
+  }
+}

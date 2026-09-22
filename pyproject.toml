@@ -1,0 +1,34 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "video2context"
+version = "0.1.0"
+description = "Turn screen recordings into compact, timestamped context for coding agents"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = ["click>=8.1,<9", "numpy>=1.24,<3", "opencv-python-headless>=4.8,<5", "httpx>=0.27,<1"]
+classifiers = ["Environment :: Console", "Programming Language :: Python :: 3", "Topic :: Multimedia :: Video"]
+
+[project.optional-dependencies]
+local-stt = ["faster-whisper>=1.0,<2"]
+dev = ["pytest>=8", "ruff>=0.9", "build>=1.2", "jsonschema>=4", "pipx>=1.7"]
+
+[project.scripts]
+v2c = "video2context.cli.main:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/video2context"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
