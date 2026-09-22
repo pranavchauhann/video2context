@@ -76,6 +76,7 @@ class FFprobe:
                 "-show_streams",
                 "-of",
                 "json",
+                "-i",
                 str(video.resolve()),
             ]
         )

@@ -2,8 +2,10 @@
 
 Install FFmpeg and the editable package with the development extra, as in README.
 
-The package has an src layout and one console command. Invoke either `v2c` or
-`python -m video2context`. Tests inject providers through `pipeline.run(..., providers=...)`;
+The package has an src layout and one console command with three subcommands: `run`
+(the default, so `v2c video.mov` equals `v2c run video.mov`), `doctor`, and `setup-speech`.
+`DefaultGroup` in `cli/main.py` routes anything that is not a subcommand name to `run`, in
+either argument order. Invoke either `v2c` or `python -m video2context`. Tests inject providers through `pipeline.run(..., providers=...)`;
 production selections go through validated config. Tests never require API credentials.
 
 Useful checks:
@@ -19,7 +21,8 @@ v2c --version
 
 Integration tests create fixtures at runtime in pytest temporary directories. ffmpeg and
 ffprobe must be installed to run these tests; missing tools cause explicit skips locally.
-CI installs both and runs on Linux/macOS with Python 3.11 and 3.12.
+CI installs both and runs on Linux/macOS with Python 3.11, 3.12 and 3.13. Tests isolate
+`XDG_CACHE_HOME`, so a speech model downloaded on your machine never changes results.
 
 `metadata.json` records stage status, warnings, candidate and retained counts, timings, cache
 hits, and retries. `--keep-intermediates` retains WAV chunks and diagnostics inside the package;

@@ -13,7 +13,6 @@ from typing import Any
 class Cache:
     def __init__(self, root: Path):
         self.root = root
-        root.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.hits = 0
         self._lock = threading.Lock()
 
@@ -34,6 +33,8 @@ class Cache:
         except (OSError, ValueError, KeyError, AttributeError):
             pass
         value = compute()
+        # Created lazily so provider-free runs leave no empty cache directory behind.
+        self.root.mkdir(parents=True, exist_ok=True, mode=0o700)
         fd, temporary = tempfile.mkstemp(dir=self.root, suffix=".tmp")
         try:
             with os.fdopen(fd, "w") as stream:

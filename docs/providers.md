@@ -2,12 +2,22 @@
 
 | Stage | Selection | Behavior |
 | --- | --- | --- |
-| Speech | auto | Uses a configured local model; otherwise disabled with a warning |
-| Speech | local | faster-whisper from an existing model directory, CPU/int8 |
+| Speech | auto | Uses the local model from `v2c setup-speech` (or `local_stt_model`); otherwise skipped with a one-line note |
+| Speech | local | faster-whisper from a downloaded model, CPU/int8; fails loudly if none is set up |
 | Speech | whisper | OpenAI `/v1/audio/transcriptions`, timestamped `verbose_json` |
 | OCR | auto / local | Tesseract executable; optional and local |
 | Vision | auto / none | Disabled |
 | Vision | openai | Structured JSON from `/v1/chat/completions` image input |
+
+### Local speech models
+
+`v2c setup-speech [--model base]` downloads a faster-whisper model into
+`$XDG_CACHE_HOME/video2context/models/<name>` (default `~/.cache/video2context/models`) and
+records it as the default in a `default` file beside it. Nothing is downloaded at any other
+time. `local_stt_model` / `V2C_LOCAL_STT_MODEL` accepts either an absolute model directory or
+the name of a downloaded model (`small`); when unset, the recorded default is used. The
+`faster-whisper` package itself is an optional extra (`video2context[local-stt]`, or
+`pipx inject video2context 'faster-whisper>=1.0,<2'`) because it pulls in CTranslate2.
 
 Use `none` to disable any stage explicitly. `--offline` rejects remote selections even
 if the corresponding skip flag is present. It does not fetch local models.

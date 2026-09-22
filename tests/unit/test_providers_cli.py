@@ -2,6 +2,7 @@ import json
 from dataclasses import asdict
 
 import httpx
+import pytest
 from click.testing import CliRunner
 
 from video2context.cache import Cache
@@ -101,3 +102,30 @@ def test_vision_contract_and_cache_offsets(tmp_path, monkeypatch):
     assert transcribe(FakeSTT(), source, cache, 10, 20)[0].start_s == 10
     assert transcribe(FakeSTT(), source, cache, 15, 20)[0].start_s == 15
     assert cache.hits == 1
+
+
+def test_rejected_key_is_an_auth_error(monkeypatch):
+    from video2context.errors import ProviderAuthError
+
+    monkeypatch.setenv("V2C_VISION_API_KEY", "bad")
+    monkeypatch.setattr(httpx, "post", lambda url, **kwargs: httpx.Response(401))
+    transport = RemoteTransport(Config(retry_delay=0), "V2C_VISION_API_KEY")
+    with pytest.raises(ProviderAuthError, match="401"):
+        transport.post("chat/completions", json={})
+
+
+def test_tesseract_language_listing_parses_header():
+    from video2context.ocr.providers import installed_languages
+
+    class Result:
+        stdout = b"List of available languages in /usr/share (3):\neng\nosd\nhin\n"
+        stderr = b""
+
+    import subprocess
+
+    original = subprocess.run
+    subprocess.run = lambda *a, **k: Result()
+    try:
+        assert installed_languages() == ["eng", "osd", "hin"]
+    finally:
+        subprocess.run = original

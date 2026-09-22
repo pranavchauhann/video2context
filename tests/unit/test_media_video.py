@@ -3,11 +3,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from video2context.domain.models import VideoMetadata
 from video2context.errors import MediaError
 from video2context.media.probe import parse_metadata
 from video2context.video.change import change_score
 from video2context.video.dedupe import distance, perceptual_hash
-from video2context.video.sample import Candidate, budget_candidates
+from video2context.video.sample import Candidate, budget_candidates, preview_size
 
 
 def test_probe_fractional_fps_and_no_audio():
@@ -63,3 +64,9 @@ def test_budget_covers_whole_video():
     selected = budget_candidates(candidates, 4, 100)
     assert len(selected) == 4
     assert [int(c.timestamp / 25) for c in selected] == [0, 1, 2, 3]
+
+
+def test_preview_size_keeps_aspect_and_never_upscales():
+    assert preview_size(VideoMetadata("v", 1, 30, 2880, 1734, False), 320) == (320, 192)
+    assert preview_size(VideoMetadata("v", 1, 30, 200, 100, False), 320) == (200, 100)
+    assert preview_size(VideoMetadata("v", 1, 30, 1080, 1920, False), 320) == (320, 568)

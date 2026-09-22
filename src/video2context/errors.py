@@ -14,5 +14,9 @@ class ProviderError(Video2ContextError):
     pass
 
 
+class ProviderAuthError(ProviderError):
+    """Credentials were rejected; retrying other requests would only repeat the failure."""
+
+
 class OutputError(Video2ContextError):
     pass

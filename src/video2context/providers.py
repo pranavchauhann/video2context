@@ -7,15 +7,18 @@ import time
 import httpx
 
 from video2context.config import Config
-from video2context.errors import ProviderError
+from video2context.errors import ProviderAuthError, ProviderError
 
 
 class RemoteTransport:
     def __init__(self, config: Config, key_variable: str):
         self.config = config
+        self.key_variable = key_variable
         self.key = os.environ.get(key_variable) or os.environ.get("OPENAI_API_KEY")
         if not self.key:
-            raise ProviderError(f"Set {key_variable} to enable the selected remote provider.")
+            raise ProviderError(
+                f"Set {key_variable} (or OPENAI_API_KEY) to enable the selected remote provider."
+            )
         self.retries = 0
         self._lock = threading.Lock()
         self._next_request = 0.0
@@ -42,6 +45,11 @@ class RemoteTransport:
                         self.retries += 1
                         time.sleep(self.config.retry_delay * 2**attempt)
                         continue
+                if response.status_code in (401, 403):
+                    raise ProviderAuthError(
+                        f"Remote provider rejected the API key (HTTP {response.status_code}). "
+                        f"Check {self.key_variable} or OPENAI_API_KEY."
+                    )
                 if response.is_error:
                     raise ProviderError(f"Remote provider returned HTTP {response.status_code}.")
                 return response.json()

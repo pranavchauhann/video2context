@@ -4,6 +4,13 @@ import subprocess
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def isolated_model_cache(tmp_path, monkeypatch):
+    """Never let a speech model downloaded on the developer's machine change test results."""
+    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "xdg-cache"))
+    monkeypatch.delenv("V2C_LOCAL_STT_MODEL", raising=False)
+
+
 @pytest.fixture
 def make_video(tmp_path):
     if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):

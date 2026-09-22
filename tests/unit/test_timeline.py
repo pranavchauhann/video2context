@@ -22,6 +22,22 @@ def test_speech_on_static_screen_is_not_lost():
     assert timeline.events[-1].start_s == 300
 
 
+def test_speech_attaches_to_the_screen_visible_when_spoken():
+    frames = [
+        FrameRef("f_1", 0, "frames/000000000.jpg"),
+        FrameRef("f_2", 20, "frames/000020000.jpg"),
+    ]
+    speech = [
+        TranscriptSegment(0, 26, "Here is the dashboard and I talk about it for a while."),
+        TranscriptSegment(25, 27, "Move the button into the toolbar."),
+    ]
+    timeline = fuse(frames, speech, {}, {}, 60, Config())
+    request = next(e for e in timeline.events if e.intent)
+    # The second screen was on display at 25s; the grown first event must not capture it.
+    assert request.frames == ["frames/000020000.jpg"]
+    assert request.start_s == 25
+
+
 def test_new_requests_and_new_frames_do_not_merge():
     events = [
         TimelineEvent("a", 0, 1, frames=["a"]),

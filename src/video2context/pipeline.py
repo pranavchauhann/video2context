@@ -16,6 +16,7 @@ from video2context.errors import ConfigurationError, MediaError, ProviderError
 from video2context.export.package import atomic_package, export_package, validate_output, write_json
 from video2context.media.audio import extract_chunks
 from video2context.media.probe import FFprobe, require_binary
+from video2context.models import resolve_local_model
 from video2context.ocr.providers import TesseractProvider
 from video2context.timeline.fuse import fuse
 from video2context.timeline.group import group_events
@@ -24,11 +25,13 @@ from video2context.transcript.service import transcribe
 from video2context.video.sample import LocalFrameSelector
 from video2context.vision.providers import OpenAIVisionProvider
 
+Report = Callable[[str, dict], None]
+
 
 def run(
     video: Path,
     config: Config,
-    report: Callable[[str, dict], None] | None = None,
+    report: Report | None = None,
     *,
     providers: dict | None = None,
 ) -> RunMetadata:
@@ -37,7 +40,9 @@ def run(
     report = report or (lambda stage, data: None)
     video = video.expanduser().resolve()
     if not video.is_file():
-        raise MediaError(f"Input is not a readable local file: {video}")
+        raise MediaError(
+            f"Input is not a readable local file: {video}. Check the path and keep it quoted."
+        )
     target = Path(config.output).expanduser().absolute()
     validate_output(target, config.overwrite)
     if target.resolve() in video.parents:
@@ -46,14 +51,22 @@ def run(
     require_binary(config.ffprobe)
     started = time.monotonic()
     warnings: list[str] = []
+    counts: dict[str, int] = {}
     lock = threading.Lock()
     stages: dict[str, str] = {}
     timings: dict[str, float] = {}
 
     def warn(message: str) -> None:
+        # Identical messages are reported once and counted, not repeated per frame.
         with lock:
+            counts[message] = counts.get(message, 0) + 1
+            if counts[message] > 1:
+                return
             warnings.append(message)
-            report("warning", {"message": message})
+        report("warning", {"message": message})
+
+    def progress(task: str, done: int, total: int) -> None:
+        report("progress", {"task": task, "done": done, "total": total})
 
     def load_provider(stage: str, factory):
         try:
@@ -76,15 +89,17 @@ def run(
         if config.stt_provider == "whisper":
             report("remote", {"message": "Audio chunks will be sent to OpenAI for transcription."})
             stt = load_provider("transcript", lambda: WhisperProvider(config))
-        elif config.stt_provider == "local" or (
-            config.stt_provider == "auto" and config.local_stt_model
-        ):
+        elif config.stt_provider == "local":
             stt = load_provider("transcript", lambda: LocalWhisperProvider(config))
         elif config.stt_provider == "auto":
-            warn(
-                "Speech unavailable: configure a local model or explicitly select "
-                "--stt-provider whisper."
-            )
+            # auto is best-effort: a missing model is a hint, not a provider failure.
+            if resolve_local_model(config.local_stt_model) is None:
+                warn(
+                    "Speech not transcribed: run `v2c setup-speech` once to enable local "
+                    "transcription, or pass --stt-provider none to hide this note."
+                )
+            else:
+                stt = load_provider("transcript", lambda: LocalWhisperProvider(config))
     if not config.no_ocr and config.ocr_provider != "none" and ocr_provider is None:
         ocr_provider = load_provider("ocr", lambda: TesseractProvider(config.ocr_language))
     if not config.no_vision and config.vision_provider == "openai" and vision_provider is None:
@@ -96,7 +111,7 @@ def run(
     with atomic_package(target, config.overwrite) as root:
         report("frames", {"max_frames": config.max_frames})
         start = time.monotonic()
-        selector = LocalFrameSelector(config)
+        selector = LocalFrameSelector(config, progress)
         frames = selector.select(video, metadata, root / "frames")
         timings["frames"] = time.monotonic() - start
         stages["frames"] = "ready"
@@ -118,6 +133,9 @@ def run(
                         transcript.extend(
                             transcribe(stt, audio, cache, offset, metadata.duration_s)
                         )
+                    except ProviderError as exc:
+                        failures += 1
+                        warn(f"Speech unavailable for audio chunk at {offset:.1f}s: {exc}")
                     except Exception:
                         failures += 1
                         warn(
@@ -162,7 +180,15 @@ def run(
                 report(stage, {"requests_at_most": len(selected)})
                 start = time.monotonic()
                 result = enrich_frames(
-                    selected, root, cache, provider, stage, contexts, config.workers, warn
+                    selected,
+                    root,
+                    cache,
+                    provider,
+                    stage,
+                    contexts,
+                    config.workers,
+                    warn,
+                    progress,
                 )
                 stages[stage] = (
                     "ready"
@@ -201,9 +227,13 @@ def run(
             "cache_hits": cache.hits,
             "provider_retries": retries,
             "elapsed_s": round(time.monotonic() - started, 3),
-            "stage_timings_s": timings,
+            "stage_timings_s": {k: round(v, 3) for k, v in timings.items()},
         }
-        warnings.sort()
+        with lock:
+            warnings[:] = sorted(
+                w if counts.get(w, 1) == 1 else f"{w} (repeated {counts[w]} times)"
+                for w in warnings
+            )
         run_metadata = RunMetadata(
             __version__, metadata, asdict(config), metrics, stages, warnings, frames
         )

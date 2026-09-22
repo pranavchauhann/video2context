@@ -3,6 +3,7 @@ from pathlib import Path
 from video2context.config import Config
 from video2context.domain.models import TranscriptSegment
 from video2context.errors import ProviderError
+from video2context.models import resolve_local_model
 from video2context.providers import RemoteTransport
 
 
@@ -32,17 +33,19 @@ class LocalWhisperProvider:
     name = "local-whisper"
 
     def __init__(self, config: Config):
-        path = Path(config.local_stt_model).expanduser()
-        if not config.local_stt_model or not path.is_dir():
+        path = resolve_local_model(config.local_stt_model)
+        if path is None:
             raise ProviderError(
-                "Set V2C_LOCAL_STT_MODEL to a downloaded faster-whisper model directory. "
+                "No local speech model found. Run `v2c setup-speech` once to download one, "
+                "or set V2C_LOCAL_STT_MODEL to a faster-whisper model directory. "
                 "Video2Context never downloads models implicitly."
             )
         try:
             from faster_whisper import WhisperModel
         except ImportError as exc:
             raise ProviderError(
-                'Install local speech support: pip install "video2context[local-stt]"'
+                "Local speech support is not installed. Run: pipx inject video2context "
+                "'faster-whisper>=1.0,<2' (or pip install 'video2context[local-stt]')."
             ) from exc
         self.model = str(path.resolve())
         self.engine = WhisperModel(

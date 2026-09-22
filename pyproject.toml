@@ -9,8 +9,40 @@ description = "Turn screen recordings into compact, timestamped context for codi
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
-dependencies = ["click>=8.1,<9", "numpy>=1.24,<3", "opencv-python-headless>=4.8,<5", "httpx>=0.27,<1"]
-classifiers = ["Environment :: Console", "Programming Language :: Python :: 3", "Topic :: Multimedia :: Video"]
+authors = [{ name = "Pranav Chauhan" }]
+keywords = [
+  "screen-recording",
+  "video",
+  "coding-agent",
+  "claude-code",
+  "cursor",
+  "codex",
+  "ocr",
+  "whisper",
+  "developer-tools",
+  "cli",
+]
+dependencies = ["click>=8.1,<9", "numpy>=1.24,<3", "httpx>=0.27,<1"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia :: Video",
+  "Topic :: Software Development",
+]
+
+[project.urls]
+Homepage = "https://github.com/pranavchauhann/video2context"
+Documentation = "https://github.com/pranavchauhann/video2context#readme"
+Issues = "https://github.com/pranavchauhann/video2context/issues"
+Changelog = "https://github.com/pranavchauhann/video2context/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 local-stt = ["faster-whisper>=1.0,<2"]

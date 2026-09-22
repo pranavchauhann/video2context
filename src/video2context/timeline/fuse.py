@@ -1,4 +1,5 @@
 import re
+from bisect import bisect_right
 
 from video2context.config import Config
 from video2context.domain.models import (
@@ -56,17 +57,24 @@ def fuse(
                 ),
             )
         )
+    timestamps = [frame.timestamp_s for frame in frames]
     for segment in transcript:
-        overlap = [e for e in events if e.start_s <= segment.end_s and e.end_s >= segment.start_s]
+        # Speech belongs to the screen visible when it started: the latest frame at or
+        # before the segment, never an earlier frame whose event grew through prior speech.
+        anchor = frames[max(0, bisect_right(timestamps, segment.start_s) - 1)] if frames else None
+        anchor_frames = [anchor.path] if anchor else []
+        overlap = [
+            e
+            for e in events
+            if e.frames == anchor_frames
+            and e.start_s <= segment.end_s
+            and e.end_s >= segment.start_s
+        ]
         event = min(overlap, key=lambda e: abs(e.start_s - segment.start_s)) if overlap else None
         if event is None:
-            prior = [f for f in frames if f.timestamp_s <= segment.start_s]
-            nearest = prior[-1] if prior else (frames[0] if frames else None)
-            event = TimelineEvent(
-                "", segment.start_s, segment.end_s, frames=[nearest.path] if nearest else []
-            )
-            if nearest:
-                result = vision.get(nearest.id, VisionResult())
+            event = TimelineEvent("", segment.start_s, segment.end_s, frames=anchor_frames)
+            if anchor:
+                result = vision.get(anchor.id, VisionResult())
                 event.screen = result.screen or "Screen recording"
             events.append(event)
         event.start_s = min(event.start_s, segment.start_s)
