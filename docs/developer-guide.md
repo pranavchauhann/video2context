@@ -1,6 +1,18 @@
 # Developer guide
 
-Install FFmpeg and the editable package with the development extra, as in README.
+Install FFmpeg, then the editable package with the development extra:
+
+```sh
+git clone https://github.com/pranavchauhann/video2context.git
+cd video2context
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -e '.[dev]'
+```
+
+Runtime dependencies are Click, NumPy and httpx; FFmpeg is the only native requirement.
+Tests generate synthetic videos and use deterministic provider mocks; no recordings or paid
+API keys are needed.
 
 The package has an src layout and one console command with three subcommands: `run`
 (the default, so `v2c video.mov` equals `v2c run video.mov`), `doctor`, and `setup-speech`.
@@ -21,8 +33,9 @@ v2c --version
 
 Integration tests create fixtures at runtime in pytest temporary directories. ffmpeg and
 ffprobe must be installed to run these tests; missing tools cause explicit skips locally.
-CI installs both and runs on Linux/macOS with Python 3.11, 3.12 and 3.13. Tests isolate
+CI installs both and runs on Linux, macOS and Windows with Python 3.11, 3.12 and 3.13. Tests isolate
 `XDG_CACHE_HOME`, so a speech model downloaded on your machine never changes results.
+All text files are read and written as UTF-8 explicitly; never rely on the platform default.
 
 `metadata.json` records stage status, warnings, candidate and retained counts, timings, cache
 hits, and retries. `--keep-intermediates` retains WAV chunks and diagnostics inside the package;
