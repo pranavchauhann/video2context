@@ -13,7 +13,7 @@ Turn screen recordings into **selected screenshots, timestamped evidence, and re
 
 **Video → useful evidence → your agent → your task**
 
-[Quick start](#quick-start) · [New user](#new-user-mac-setup-and-first-video) · [Existing user](#existing-user-process-another-video) · [Cleanup](#finished-delete-the-generated-files) · [Agent prompts](#use-with-your-agent) · [Providers](#speech-ocr-and-vision) · [Troubleshooting](#troubleshooting) · [Developer docs](#development)
+[Quick start](#quick-start) · [New user](#new-user-setup-and-first-video) · [Existing user](#existing-user-process-another-video) · [Cleanup](#finished-delete-the-generated-files) · [Agent prompts](#use-with-your-agent) · [Providers](#speech-ocr-and-vision) · [Troubleshooting](#troubleshooting) · [Developer docs](#development)
 
 </div>
 
@@ -28,14 +28,14 @@ A screen recording contains useful information scattered across repeated frames,
 | UI feedback | Identify requested layout, content, or component changes |
 | Bug reproduction | Trace actions, inspect visible errors, and investigate the issue |
 | App walkthrough | Understand screens and behavior before implementation |
-| Instagram or another app screencast | Review your actions and explain possible mistakes |
+| Screencast of any app or website | Review the actions taken and explain possible mistakes |
 
-**Video2Context prepares the evidence. You give the agent the task.** It does not run Claude, edit your code, or decide what you intended to do.
+**Video2Context prepares the evidence. You give the agent the task.** It does not run your agent, edit your code, or decide what you intended to do.
 
 ```text
   Your video                Video2Context                  Your agent
   ──────────                ─────────────                  ──────────
-  feedback.mov    ──────▶    Select useful frames   ──────▶  Read context.md
+  recording.mov   ──────▶    Select useful frames   ──────▶  Read context.md
                             Extract available text         Inspect screenshots
                             Align speech, if enabled       Analyze or implement
                             Export a context package       Follow YOUR request
@@ -45,11 +45,13 @@ A screen recording contains useful information scattered across repeated frames,
 
 **New user? Start at Step 1 below. Already installed? Go to [Existing user](#existing-user-process-another-video).**
 
-This guide takes you from a Mac with nothing installed to reviewing a local video with Claude, **without audio transcription or API keys**. Copy each command block into your terminal in order. Wait for each command to finish before continuing.
+This guide takes you from a machine with nothing installed to reviewing a local video with your coding agent, **without audio transcription or API keys**. Copy each command block into your terminal in order. Wait for each command to finish before continuing.
 
 > The application is **Video2Context**; its terminal command is **`v2c`**. Running `v2c` before installing it will give `command not found`. Install from GitHub using the steps below; PyPI publication is still pending.
 
-## New user: Mac setup and first video
+## New user: setup and first video
+
+The steps below are for macOS. Linux users: use the **Ubuntu / Debian** install section further down, then continue from Step 4.
 
 ### Step 1 — Install Homebrew
 
@@ -86,7 +88,7 @@ pipx ensurepath
 
 This installs Python, pipx, Git, FFmpeg, and Tesseract for reading on-screen text. Tesseract is included here so the first run can extract text as well as screenshots; it is optional for screenshot-only use.
 
-**Now close and reopen your terminal**, including any open IntelliJ terminal tabs, so the PATH changes take effect.
+**Now close and reopen your terminal**, including any terminal tabs open inside your IDE, so the PATH changes take effect.
 
 ### Step 3 — Install Video2Context from GitHub
 
@@ -106,7 +108,7 @@ v2c --version
 
 ### Step 4 — Open your project terminal
 
-**Where:** Open your own project in **IntelliJ → Terminal**. Use the same project where you work with Claude.
+**Where:** Open a terminal in the project you want the agent to work on. Your IDE's built-in terminal or a standalone terminal both work; what matters is the directory.
 
 Check the current directory:
 
@@ -114,91 +116,94 @@ Check the current directory:
 pwd
 ```
 
-It should show your application folder, such as `/Users/your-name/projects/my-app`. If it is the wrong directory, open a terminal in the correct project before continuing.
+It should show your project folder, such as `/Users/your-name/projects/my-app`. If it is the wrong directory, `cd` into the correct project before continuing.
 
-If you are inside an interactive Claude session, open a **second terminal tab** for the next command. Video2Context does not install or start Claude; this guide assumes you already use Claude separately.
+If you are already inside an interactive agent session in this terminal, open a **second terminal tab** for the next command. Video2Context does not install or start your agent; this guide assumes you already use one separately.
 
 ### Step 5 — Process your first video without audio
 
-**Where:** In your project's terminal, copy:
+**Where:** In your project's terminal, copy, replacing the path with your own recording:
 
 ```bash
-v2c "$HOME/Downloads/insta_demo.mov" --stt-provider none --no-vision --output .video-review
+v2c "/path/to/recording.mov" --stt-provider none --no-vision
 ```
 
-**Change only the video path if needed.** This example works when `insta_demo.mov` is in your Downloads folder. `$HOME` automatically means your Mac user folder. Keep the quotes; do not put a backslash before `_`.
+For example, a file in your Downloads folder is `"$HOME/Downloads/recording.mov"`. Keep the quotes around the path; they protect spaces and special characters.
 
 | Part of the command | Meaning |
 | --- | --- |
 | `--stt-provider none` | Do not transcribe audio |
-| `--no-vision` | Do not call an AI vision provider; Claude can still inspect the screenshots later |
-| `--output .video-review` | Save generated screenshots and context in this folder inside your project |
+| `--no-vision` | Do not call an AI vision provider; your agent can still inspect the screenshots later |
+| *(no `--output`)* | Save generated screenshots and context in the default `.video-context/` folder inside your project. Add `--output <folder>` to choose another name |
 
 Wait until the command finishes with:
 
 ```text
-Context ready: .video-review/context.md
+Context ready: .video-context/context.md
 ```
 
-If `.video-review` already exists, use the [existing-user command](#existing-user-process-another-video) for a previous v2c package, or choose a fresh output folder.
+If `.video-context` already exists, use the [existing-user command](#existing-user-process-another-video) for a previous v2c package, or choose a fresh output folder.
 
-### Step 6 — Paste this prompt into Claude
+### Step 6 — Paste this prompt into your agent
 
-**Where:** In your **Claude conversation**, not in the shell terminal:
+**Where:** In your **agent conversation**, not in the shell terminal. Replace the bracketed text with a description of your recording:
 
 ```text
-Read .video-review/context.md and .video-review/timeline.json.
+Read .video-context/context.md and .video-context/timeline.json.
 Inspect all referenced screenshots.
 
-This is an Instagram screencast. Explain what I may have done wrong,
-with timestamps and screenshot references. If my intended outcome
-is unclear, ask me first. Flag missing evidence instead of guessing.
+This is a screencast of [what you recorded]. Explain what I may have
+done wrong, with timestamps and screenshot references. If my intended
+outcome is unclear, ask me first. Flag missing evidence instead of guessing.
 
 Only analyze and explain. Do not change code.
 ```
 
-Change the task description if your recording is about something else. These commands generate evidence locally; Claude's handling of the files you ask it to read depends on your Claude setup.
+Change the task if your recording is about something else, such as implementing UI feedback or reproducing a bug. These commands generate evidence locally; how your agent handles the files you ask it to read depends on your agent setup.
 
 ## Existing user: process another video
 
 **Already installed? No need to repeat setup.** Run this in your project terminal when you are done with the previous review:
 
 ```bash
-v2c "$HOME/Downloads/insta_demo.mov" --stt-provider none --no-vision --output .video-review --overwrite
+v2c "/path/to/next-recording.mov" --stt-provider none --no-vision --overwrite
 ```
 
-Replace the path with the next video's path. `--overwrite` replaces the previous context and screenshots in `.video-review/`.
+`--overwrite` replaces the previous context and screenshots in `.video-context/`.
 
-Then tell Claude:
+Then tell your agent:
 
 ```text
-I have processed a new video. Read .video-review/context.md and
-.video-review/timeline.json again, and inspect the new screenshots.
+I have processed a new video. Read .video-context/context.md and
+.video-context/timeline.json again, and inspect the new screenshots.
 Use this updated evidence for my next task, not the previous recording.
 ```
 
-To keep reviews separate, start a new Claude conversation. To keep both output packages, use a different folder such as `--output .video-review-second` and give Claude that folder's path.
+To keep reviews separate, start a new agent conversation. To keep both output packages, use a different folder such as `--output .video-context-second` and give your agent that folder's path.
 
 If overwrite is refused because the folder is not recognized as a Video2Context package, choose a fresh folder name instead of deleting unfamiliar files.
 
 ## Finished: delete the generated files
 
-**Where:** In the same project terminal, after processing and review are complete:
+**Where:** In the same project terminal, after processing and review are complete. Set `OUT` to the output folder you used (the default is `.video-context`):
 
 ```bash
-rm -rf ./.video-review ./.video-review.v2c-cache
+OUT=.video-context
+rm -rf "./$OUT" "./$OUT.v2c-cache"
 ```
 
-This permanently deletes the generated screenshots, context, and cache in those two folders. **It does not delete your original video or project code.** It does not erase content already read into a Claude conversation. Clean up any differently named output folders separately.
+This permanently deletes the generated screenshots, context, and the cache folder that sits next to the output. **It does not delete your original video or project code.** It does not erase content already read into an agent conversation. If you processed several videos with different `--output` names, run it once per name.
 
 After cleanup, use the first-video command in Step 5 again; there is no existing package to overwrite.
 
 To keep generated review files out of commits, add these lines to your project's `.gitignore` file:
 
 ```gitignore
-.video-review/
-.video-review.v2c-cache/
+.video-context*/
+*.v2c-cache/
 ```
+
+The first line covers the default folder and any name starting with `.video-context`; the second covers every cache folder. If you use an output name with a different prefix, add that folder too.
 
 <details>
 <summary><strong>Ubuntu / Debian — alternative installation</strong></summary>
@@ -223,9 +228,9 @@ Continue from Step 4 above using your Linux video path.
 
 ## Use with your agent
 
-**The prompts below use the default `.video-context/` output folder.** If you followed the beginner guide above, replace `.video-context` with `.video-review` in these prompts.
+**The prompts below use the default `.video-context/` output folder.** If you passed `--output`, replace `.video-context` with your folder name.
 
-Run `v2c` in the same project directory where your agent is working. If you are already inside an interactive Claude session, use a second terminal tab for `v2c`, then return to Claude with your prompt.
+Run `v2c` in the same project directory where your agent is working. If you are already inside an interactive agent session, use a second terminal tab for `v2c`, then return to the agent with your prompt.
 
 ### Analyze a screencast — no code changes
 
@@ -233,9 +238,9 @@ Run `v2c` in the same project directory where your agent is working. If you are 
 Read .video-context/context.md and .video-context/timeline.json.
 Inspect all referenced screenshots.
 
-This is an Instagram screencast. Review my actions and explain what
-I may have done wrong. For each finding, cite the timestamp and
-screenshot, explain the issue, and suggest what I should do instead.
+This is a screencast of [what you recorded]. Review my actions and
+explain what I may have done wrong. For each finding, cite the timestamp
+and screenshot, explain the issue, and suggest what I should do instead.
 
 Distinguish confirmed issues from guesses. If my intended outcome
 is unclear, ask me first. Flag missing interactions or insufficient
@@ -262,7 +267,7 @@ The generated `agent-prompt.md` is an **implementation-oriented** starting point
 
 ## What gets generated?
 
-Output is created in your **current terminal directory**, not beside the source video. The default folder is `.video-context/`; the beginner guide uses `--output .video-review`, which has the same structure under that name:
+Output is created in your **current terminal directory**, not beside the source video. The default folder is `.video-context/`; a custom `--output` folder has the same structure under that name:
 
 ```text
 Your project/
@@ -277,7 +282,7 @@ Your project/
         └── 000018000.jpg   ← Screenshot captured at 18 seconds
 ```
 
-Provider results are cached separately in `.video-context.v2c-cache/`. Repeated runs can reuse unchanged results instead of calling providers again.
+Provider results are cached separately in `.video-context.v2c-cache/` (or `<your-output>.v2c-cache/`). Repeated runs can reuse unchanged results instead of calling providers again.
 
 <details>
 <summary><strong>Example context excerpt — illustrative, with speech enabled</strong></summary>
@@ -475,11 +480,11 @@ Processing stays local unless you explicitly configure a remote provider. Genera
 Add these entries to **your application's** `.gitignore`:
 
 ```gitignore
-.video-context/
+.video-context*/
 *.v2c-cache/
 ```
 
-If you choose a custom output directory, ignore that directory too. To clear derived local evidence, delete both the output and its adjacent cache. Credentials and raw provider error bodies are not written to diagnostics.
+If you choose a custom output directory with a different prefix, ignore that directory too. To clear derived local evidence, delete both the output and its adjacent cache (see [Cleanup](#finished-delete-the-generated-files)). Credentials and raw provider error bodies are not written to diagnostics.
 
 | Available now | Not implemented |
 | --- | --- |
