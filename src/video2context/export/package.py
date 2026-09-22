@@ -50,7 +50,7 @@ def atomic_package(target: Path, overwrite: bool) -> Iterator[Path]:
         yield temporary
         # Another program may create or replace the output while processing is in progress.
         validate_output(target, overwrite)
-        (temporary / MARKER).write_text("1\n")
+        (temporary / MARKER).write_text("1\n", encoding="utf-8")
         if target.exists():
             backup = target.parent / f".{target.name}-backup-{uuid.uuid4().hex}"
             target.rename(backup)
@@ -69,7 +69,9 @@ def atomic_package(target: Path, overwrite: bool) -> Iterator[Path]:
 
 
 def write_json(path: Path, value) -> None:
-    path.write_text(json.dumps(value, indent=2, ensure_ascii=False, allow_nan=False) + "\n")
+    path.write_text(
+        json.dumps(value, indent=2, ensure_ascii=False, allow_nan=False) + "\n", encoding="utf-8"
+    )
 
 
 def agent_prompt(output: Path) -> str:
@@ -87,8 +89,8 @@ def agent_prompt(output: Path) -> str:
 
 
 def export_package(root: Path, markdown: str, timeline, transcript, metadata, target: Path) -> None:
-    (root / "context.md").write_text(markdown)
+    (root / "context.md").write_text(markdown, encoding="utf-8")
     write_json(root / "timeline.json", asdict(timeline))
     write_json(root / "transcript.json", [asdict(segment) for segment in transcript])
     write_json(root / "metadata.json", asdict(metadata))
-    (root / "agent-prompt.md").write_text(agent_prompt(target))
+    (root / "agent-prompt.md").write_text(agent_prompt(target), encoding="utf-8")

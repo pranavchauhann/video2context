@@ -25,7 +25,8 @@ class TesseractProvider:
         if not shutil.which("tesseract"):
             raise ProviderError(
                 "Local OCR unavailable: Tesseract is not installed (macOS: brew install "
-                "tesseract; Ubuntu: sudo apt install tesseract-ocr). Use --no-ocr to skip."
+                "tesseract; Ubuntu: sudo apt install tesseract-ocr; Windows: see "
+                "github.com/UB-Mannheim/tesseract/wiki). Use --no-ocr to skip."
             )
         languages = installed_languages()
         missing = [code for code in language.split("+") if languages and code not in languages]

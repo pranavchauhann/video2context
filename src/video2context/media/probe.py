@@ -13,8 +13,9 @@ from video2context.errors import MediaError
 def require_binary(name: str) -> None:
     if not shutil.which(name):
         raise MediaError(
-            f"Missing {name}. Install FFmpeg (macOS: brew install ffmpeg; "
-            "Ubuntu: sudo apt install ffmpeg) and ensure ffmpeg and ffprobe are on PATH."
+            f"Missing {name}. Install FFmpeg (macOS: brew install ffmpeg; Ubuntu: sudo apt "
+            "install ffmpeg; Windows: winget install Gyan.FFmpeg) and ensure ffmpeg and "
+            "ffprobe are on PATH."
         )
 
 

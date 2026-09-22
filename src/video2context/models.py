@@ -33,7 +33,7 @@ def resolve_local_model(value: str) -> Path | None:
         return candidate if candidate.is_dir() else None
     marker = root / DEFAULT_FILE
     if marker.is_file():
-        name = marker.read_text().strip()
+        name = marker.read_text(encoding="utf-8").strip()
         if name and (root / name).is_dir():
             return root / name
     return None
@@ -61,5 +61,5 @@ def download_model(name: str) -> Path:
             f"Could not download speech model {name!r} ({type(exc).__name__}). "
             "Check your internet connection and retry."
         ) from exc
-    (root / DEFAULT_FILE).write_text(f"{name}\n")
+    (root / DEFAULT_FILE).write_text(f"{name}\n", encoding="utf-8")
     return target

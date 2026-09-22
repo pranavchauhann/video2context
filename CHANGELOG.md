@@ -25,6 +25,10 @@
   file-system errors include the failing path.
 - The provider cache directory is only created when something is cached.
 - `ffprobe` receives the input via `-i`, so paths beginning with `-` work.
+- Every generated file and config file is read and written as UTF-8, so speech or OCR text
+  outside the system code page no longer fails the export on Windows.
+- Install hints in `v2c doctor` and error messages cover Windows (winget) as well as macOS
+  and Ubuntu; CI runs the suite on Windows too.
 
 ### Changed
 - Initial installable CLI, local media pipeline, visual selection and perceptual dedupe.

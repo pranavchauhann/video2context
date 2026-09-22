@@ -208,7 +208,8 @@ def doctor() -> None:
                 (
                     name,
                     bad,
-                    "required: brew install ffmpeg (macOS) or sudo apt install ffmpeg (Ubuntu)",
+                    "required: brew install ffmpeg (macOS), sudo apt install ffmpeg (Ubuntu) "
+                    "or winget install Gyan.FFmpeg (Windows)",
                 )
             )
     if shutil.which("tesseract"):
@@ -221,7 +222,8 @@ def doctor() -> None:
             (
                 "Tesseract OCR",
                 opt,
-                "optional on-screen text: brew install tesseract / apt install tesseract-ocr",
+                "optional on-screen text: brew install tesseract / apt install tesseract-ocr / "
+                "github.com/UB-Mannheim/tesseract/wiki (Windows)",
             )
         )
     try:

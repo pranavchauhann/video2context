@@ -21,5 +21,7 @@ def test_feedback_golden():
     document = EvidenceCompressor().compress(timeline, config.intent)
     markdown = render_markdown(document, video, config.intent, config.detail, 1, [])
     fixtures = Path(__file__).parents[1] / "fixtures"
-    assert markdown == (fixtures / "feedback.context.md").read_text()
-    assert asdict(timeline) == json.loads((fixtures / "feedback.timeline.json").read_text())
+    assert markdown == (fixtures / "feedback.context.md").read_text(encoding="utf-8")
+    assert asdict(timeline) == json.loads(
+        (fixtures / "feedback.timeline.json").read_text(encoding="utf-8")
+    )

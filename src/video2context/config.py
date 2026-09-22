@@ -113,7 +113,7 @@ def load_config(
     try:
         for path in (user, project):
             if path.is_file():
-                data = tomllib.loads(path.read_text())
+                data = tomllib.loads(path.read_text(encoding="utf-8"))
                 data = data.get("video2context", data)
                 unknown = set(data) - set(defaults)
                 if unknown:

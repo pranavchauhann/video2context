@@ -25,7 +25,7 @@ class Cache:
                 digest.update(block)
         path = self.root / f"{digest.hexdigest()}.json"
         try:
-            record = json.loads(path.read_text())
+            record = json.loads(path.read_text(encoding="utf-8"))
             if record.get("version") == 1:
                 with self._lock:
                     self.hits += 1
@@ -37,7 +37,7 @@ class Cache:
         self.root.mkdir(parents=True, exist_ok=True, mode=0o700)
         fd, temporary = tempfile.mkstemp(dir=self.root, suffix=".tmp")
         try:
-            with os.fdopen(fd, "w") as stream:
+            with os.fdopen(fd, "w", encoding="utf-8") as stream:
                 json.dump({"version": 1, "result": value}, stream, ensure_ascii=False)
             os.replace(temporary, path)
         finally:
