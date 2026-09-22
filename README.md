@@ -13,7 +13,7 @@ Claude Code, Codex or Cursor a timestamped `context.md` instead of a video.
 [![Local by default](https://img.shields.io/badge/Processing-local_by_default-15803D)](docs/usage.md#privacy-and-limits)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
-[Install](#install) · [Use](#use) · [Extras](#optional-extras) · [Full guide](docs/usage.md)
+[Install](#install) · [Use](#use) · [Clean up](#clean-up) · [Extras](#optional-extras) · [Full guide](docs/usage.md)
 
 </div>
 
@@ -31,8 +31,7 @@ Done in 9.7s: kept 34 of 116 sampled frames, 34 events.
 Context ready: .video-context/context.md
 ```
 
-Record a bug, a UI review or a walkthrough. Run `v2c` on it. Paste one prompt into your
-agent. Everything runs on your machine: no account, no API key, nothing uploaded.
+Everything runs on your machine: no account, no API key, nothing uploaded.
 
 ## Install
 
@@ -83,14 +82,11 @@ py -m pipx install "git+https://github.com/pranavchauhann/video2context.git"
 
 </details>
 
-Open a new terminal and confirm everything is ready:
+Open a new terminal and check the setup:
 
 ```bash
 v2c doctor
 ```
-
-Every line should say `OK`. `OFF` marks optional extras; `MISSING` comes with the command
-that fixes it.
 
 ## Use
 
@@ -109,16 +105,17 @@ referenced screenshots. This is a screencast of [what you recorded].
 [What you want done.] Cite the timestamp and screenshot for every finding.
 ```
 
-| You want to… | Run |
-| --- | --- |
-| Get UI feedback implemented | `v2c "clip.mov" --intent ui-feedback` |
-| Investigate a bug | `v2c "clip.mov" --intent bug-repro --detail detailed` |
-| Keep more screenshots | `v2c "clip.mov" --max-frames 60` |
-| Replace the previous output | `v2c "clip.mov" --overwrite` |
-| See every option | `v2c run --help` |
+Processing another recording? Add `--overwrite`. All options: `v2c run --help`.
 
-Add `.video-context*/` to your project's `.gitignore`. Agent prompts for analysis vs.
-implementation, the output layout and every flag are in the [usage guide](docs/usage.md).
+Add `.video-context*/` to your project's `.gitignore`.
+
+## Clean up
+
+Delete the generated files when you're done. Your video and code are untouched:
+
+```bash
+rm -rf .video-context .video-context.v2c-cache
+```
 
 ## Optional extras
 
@@ -136,21 +133,13 @@ brew install tesseract            # macOS
 sudo apt install tesseract-ocr    # Ubuntu / Debian
 ```
 
-Windows: install the [UB Mannheim build](https://github.com/UB-Mannheim/tesseract/wiki) and
-add it to PATH.
-
-**AI screenshot descriptions** are off by default and need an explicit `--vision-provider openai`.
-See [speech, OCR and vision](docs/usage.md#speech-ocr-and-vision).
+Windows: [UB Mannheim build](https://github.com/UB-Mannheim/tesseract/wiki), added to PATH.
 
 ## Learn more
 
-| | |
-| --- | --- |
-| [Usage guide](docs/usage.md) | Agent prompts, output files, all options, configuration, troubleshooting, privacy |
-| [Providers](docs/providers.md) | Local and remote speech, OCR and vision settings |
-| [Architecture](docs/architecture.md) | How frames are selected and evidence is fused |
-| [Developer guide](docs/developer-guide.md) | Local setup, tests, diagnostics |
-| [Changelog](CHANGELOG.md) | Release history |
+[Usage guide](docs/usage.md) (agent prompts, output files, all options, troubleshooting) ·
+[Providers](docs/providers.md) · [Architecture](docs/architecture.md) ·
+[Developer guide](docs/developer-guide.md) · [Changelog](CHANGELOG.md)
 
 ---
 
