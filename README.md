@@ -146,20 +146,29 @@ If `.video-context` already exists, use the [existing-user command](#existing-us
 
 ### Step 6 — Paste this prompt into your agent
 
-**Where:** In your **agent conversation**, not in the shell terminal. Replace the bracketed text with a description of your recording:
+**Where:** In your **agent conversation**, not in the shell terminal. Fill in the two bracketed lines: what the recording shows, and what you want done with it:
 
 ```text
 Read .video-context/context.md and .video-context/timeline.json.
 Inspect all referenced screenshots.
 
-This is a screencast of [what you recorded]. Explain what I may have
-done wrong, with timestamps and screenshot references. If my intended
-outcome is unclear, ask me first. Flag missing evidence instead of guessing.
+This is a screencast of [what you recorded].
+[What you want from it.]
 
-Only analyze and explain. Do not change code.
+Cite the timestamp and screenshot for every finding. If my intended
+outcome is unclear, ask me first. Flag missing evidence instead of guessing.
 ```
 
-Change the task if your recording is about something else, such as implementing UI feedback or reproducing a bug. These commands generate evidence locally; how your agent handles the files you ask it to read depends on your agent setup.
+The second bracketed line is your task, for example:
+
+| You want to… | Write |
+| --- | --- |
+| Understand the recording | `Describe what happens step by step.` |
+| Find a mistake | `Explain what I may have done wrong and what to do instead. Do not change code.` |
+| Reproduce a bug | `Find where the flow breaks and investigate the cause in this project.` |
+| Apply feedback | `List the UI changes being asked for, then implement them.` |
+
+These commands generate evidence locally; how your agent handles the files you ask it to read depends on your agent setup.
 
 ## Existing user: process another video
 
@@ -238,13 +247,14 @@ Run `v2c` in the same project directory where your agent is working. If you are 
 Read .video-context/context.md and .video-context/timeline.json.
 Inspect all referenced screenshots.
 
-This is a screencast of [what you recorded]. Review my actions and
-explain what I may have done wrong. For each finding, cite the timestamp
-and screenshot, explain the issue, and suggest what I should do instead.
+This is a screencast of [what you recorded].
+[What you want to know: e.g. what happens step by step, where the flow
+breaks, or what I may have done wrong and what to do instead.]
 
-Distinguish confirmed issues from guesses. If my intended outcome
-is unclear, ask me first. Flag missing interactions or insufficient
-evidence instead of inventing details.
+For each finding, cite the timestamp and screenshot. Distinguish
+confirmed observations from guesses. If my intended outcome is unclear,
+ask me first. Flag missing interactions or insufficient evidence instead
+of inventing details.
 
 Only analyze and explain. Do not change any code.
 ```
